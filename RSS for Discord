@@ -1,0 +1,106 @@
+{
+  "name": "RSS for Discord",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7f2c88b1-1361-4171-83df-d8761ca6e7f8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://www.bleepingcomputer.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        0
+      ],
+      "id": "52f02d21-17b0-4ae9-860b-4792f05b37cb",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=\n######################\n\n{{$json.creator}}\n**{{$json.title}}**\n{{$json.content}}\n{{$json.pubDate}}\n{{$json.link}}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        864,
+        0
+      ],
+      "id": "46b8ebf4-f99f-4628-a3f4-b27655cef0d5",
+      "name": "Discord",
+      "webhookId": "DISCORD_WEBHOOK_ID",
+      "credentials": {
+        
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all()\n\nreturn items.map((item) => ({\n  json: {\n    creator: item.json.creator,\n    title: item.json.title,\n    link: item.json.link,\n    pubDate: item.json.pubDate,\n    content: item.json.content\n  }\n}))"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "ea6477e7-02f5-48ff-850b-b02f0dda00eb",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1dc37524-c700-419f-9f87-9bae32028d59",
+  "meta": {  },
+  "id": "KGFLjFtuADLC92i9",
+  "tags": []
+}

@@ -1,0 +1,401 @@
+{
+  "name": "receipt OCR",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "FOLDER_ID",
+          "mode": "list",
+          "cachedResultName": "unprocessed",
+          "cachedResultUrl": "GOOGLE_DRIVE_FOLDER_ID"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -16
+      ],
+      "id": "a8c3e97d-59b4-49ad-9f97-b61f5bb2dfc1",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "c9b3b184-4e64-48bb-8051-681744e43333",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-tesseractjs.tesseractNode",
+      "typeVersion": 1,
+      "position": [
+        688,
+        0
+      ],
+      "id": "818f7bdf-0e72-44cd-8b5e-38dc3d1e53b7",
+      "name": "Tesseract"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Jesteś parserem paragonów sklepowych w Polsce.\nTwoim zadaniem jest WYŁĄCZNIE ekstrakcja podstawowych danych z tekstu OCR paragonu.\n\nZwróć WYŁĄCZNIE poprawny JSON.\nNie dodawaj żadnych komentarzy ani tekstu poza JSON.\n\n---\n\nZASADY:\n- Tekst wejściowy pochodzi z OCR zdjęcia paragonu (może zawierać błędy).\n- Ignoruj pozycje produktów, VAT, numery kas, adresy, metody płatności.\n- Interesują nas tylko:\n  - data rachunku\n  - nazwa sklepu\n  - suma do zapłaty\n\n---\n\nDATA:\n- Szukaj daty w formacie YYYY-MM-DD lub DD.MM.YYYY\n- Zwróć w formacie YYYY-MM-DD\n- Jeśli brak daty → null\n\n---\n\nNAZWA SKLEPU:\n- Jeśli na paragonie występuje wyraźna nazwa sklepu (np. \"BIEDRONKA\") → zwróć ją\n- Jeśli na paragonie nie ma nazwy sklepu - zwróć → null\n\n---\n\nSUMA:\n- Szukaj całkowitej kwoty do zapłaty (np. linie zawierające \"Suma\", \"SUMA PLN\", \"Do zapłaty\")\n- Zwróć wartość jako liczbę (kropka jako separator dziesiętny)\n- Jeśli kilka kwot → wybierz końcową kwotę do zapłaty\n\n---\n\nFORMAT WYJŚCIOWY (DOKŁADNIE TEN):\n\n{\n  \"date\": \"YYYY-MM-DD\" | null,\n  \"store_name\": string | null,\n  \"total_amount\": number | null\n}\n\n---\n\nPRZETWÓRZ PONIŻSZY TEKST OCR:\n {{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        896,
+        0
+      ],
+      "id": "0ae0b749-f02b-47b4-ad6b-200022204913",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -144
+      ],
+      "id": "d19392b1-d404-4993-b88c-13d6b9c8dbdb",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Download file').item.json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "PROCESSED_FOLDER_ID",
+          "mode": "list",
+          "cachedResultName": "processed",
+          "cachedResultUrl": "GOOGLE_DRIVE_FOLDER_ID"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1664,
+        0
+      ],
+      "id": "f8c20083-1995-41b8-976c-efae4da58df3",
+      "name": "Move file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        112,
+        -16
+      ],
+      "id": "a88324ee-0bcd-420b-adc9-e00ed10a4132",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "FOLDER_ID",
+            "mode": "list",
+            "cachedResultName": "unprocessed",
+            "cachedResultUrl": "GOOGLE_DRIVE_ID"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -272,
+        -16
+      ],
+      "id": "2bea000e-f9c5-46d3-a724-179ccb3de2b5",
+      "name": "Search for folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output\n.replace(\"```json\",\"\")\n.replace(/```/g, \"\")\nreturn JSON.parse(output)"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "1e03c7e0-f63f-4964-ad68-fa29a3d9eaff",
+      "name": "parseJSON"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Paragony",
+          "cachedResultUrl": "SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "SPREADSHEET_ID"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Data": "={{ $json.date }}",
+            "Sklep": "={{ $json.store_name }}",
+            "Suma": "={{ $json.total_amount }}"
+          },
+          "matchingColumns": [
+            "Data"
+          ],
+          "schema": [
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sklep",
+              "displayName": "Sklep",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Suma",
+              "displayName": "Suma",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "f9feeace-298a-4a26-8a46-e8aab0cf2cf4",
+      "name": "Add row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search for folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Tesseract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tesseract": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "parseJSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move file": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for folders": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parseJSON": {
+      "main": [
+        [
+          {
+            "node": "Add row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add row": {
+      "main": [
+        [
+          {
+            "node": "Move file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "76e3446a-efd6-433c-b189-eef5acb30626",
+  "meta": {
+
+  },
+  "id": "WCvRqPRsfKWhABpR",
+  "tags": []
+}

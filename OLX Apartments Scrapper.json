@@ -1,0 +1,1139 @@
+{
+  "name": "OLX Apartments Scrapper",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        -208
+      ],
+      "id": "22ca2713-f772-4af2-8df7-57275c358b9d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc20e288-87b9-4bf3-907a-6e8750145935",
+              "name": "baseUrl",
+              "value": "https://www.olx.pl/nieruchomosci/mieszkania/wynajem/q-mieszkanie-do-wynaj%C4%99cia/?search[filter_float_price:to]=3000&search[filter_float_m:from]=12&search[filter_float_m:to]=40",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -864,
+        -208
+      ],
+      "id": "9d5f74bf-2297-4dc9-93a5-647c2fe95065",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.baseUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            },
+            {
+              "name": "Accept-Language",
+              "value": " pl-PL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -624,
+        -208
+      ],
+      "id": "2eef436c-3781-4841-954b-f3fc1c5b2fd9",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "title": "=OLX_{{ $now.format(\"yyyy-MM-dd_HH-mm\") }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2416,
+        -480
+      ],
+      "id": "163350fa-564d-4892-b998-dfa94e4bd6d7",
+      "name": "Create spreadsheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $('getColumnNames').first().json.columns\n\nconst row = {};\nheaders.forEach(h => row[h] = h);\n\nreturn row;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3104,
+        -480
+      ],
+      "id": "41f7267d-d584-4323-9749-624517fc9f02",
+      "name": "Add headers"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3424,
+        -192
+      ],
+      "id": "8df9bfa1-c726-4ad2-ac54-3c309191e24c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3888,
+        -208
+      ],
+      "id": "a1eb255f-33ab-4f59-a02e-754769f54734",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "paginationList",
+              "cssSelector": ".pagination-item:last-of-type a"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        -208
+      ],
+      "id": "5d6bf655-746c-45f5-8229-1117dc18016a",
+      "name": "getPagesCount"
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseUrl = \"https://www.olx.pl/nieruchomosci/mieszkania/wynajem/q-mieszkanie-do-wynaj%C4%99cia/?search[filter_float_price:to]=3000&search[filter_float_m:from]=12&search[filter_float_m:to]=40\"\n\nconst paginationLength = parseInt($input.first().json.paginationList)\n\nconst urlList = []\n\nfor(let i = 2; i<= paginationLength; i++)\n  {\n const url = i === 1 ? baseUrl : `${baseUrl}&page=${i}`;\n  urlList.push({ url });\n}\n  \n\nreturn urlList"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -208
+      ],
+      "id": "acd986a6-0838-4c76-b8c6-b2aa144a9e9d",
+      "name": "getUrls"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            },
+            {
+              "name": "Accept-Language",
+              "value": " pl-PL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        -32
+      ],
+      "id": "74c7bde8-93cb-4e14-b59b-ffc5360de87c",
+      "name": "getPage"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data;\n\nconst regex = /href=\"(\\/d\\/oferta\\/[^\"]+)\"/g\nconst urls = new Set();\nlet match;\n\nwhile((match = regex.exec(html)) !== null) {\n  urls.add(\"https://www.olx.pl\"+match[1])\n}\n\nreturn [...urls].map((u) => {return {json: {url:u}}})\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -32
+      ],
+      "id": "9f01b64b-fa49-478d-9f8d-76c3d3309eea",
+      "name": "getOfferLinks"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (2-1)+1) }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2256,
+        -32
+      ],
+      "id": "a166d753-b6e9-4567-b97a-5d7b56c152b7",
+      "name": "Wait02"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        -32
+      ],
+      "id": "3fbc6d28-2f9a-4a96-9e59-3629b40a8ac0",
+      "name": "Wait01"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ba4086d0-0c7b-491e-aa4b-5bf62283fe0d",
+              "leftValue": "={{ $json.isEmpty() }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1712,
+        -208
+      ],
+      "id": "7a512c11-c408-4461-b9dd-267be61f4803",
+      "name": "ifExists"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2480,
+        -32
+      ],
+      "id": "975331d1-48fa-4cfe-a13a-950db3bc4a44",
+      "name": "getOfferPage",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "ID",
+              "cssSelector": ".css-ooacec"
+            },
+            {
+              "key": "title",
+              "cssSelector": "[data-testid=\"offer_title\"] h4"
+            },
+            {
+              "key": "description",
+              "cssSelector": "[data-testid=\"ad_description\"]",
+              "skipSelectors": "h3"
+            },
+            {
+              "key": "parameters",
+              "cssSelector": "[data-testid=\"ad-parameters-container\"] p",
+              "returnArray": true
+            },
+            {
+              "key": "price",
+              "cssSelector": "[data-testid=\"ad-price-container\"] h3"
+            }
+          ]
+        },
+        "options": {
+          "cleanUpText": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        2784,
+        -32
+      ],
+      "id": "1d8e6dd4-3df0-4e28-a8dd-7401429f93f0",
+      "name": "getOfferDetails",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const id = $input.first().json.ID.split(\": \")[1];\nconst title = $input.first().json.title;\nconst price = $input.first().json.price;\nconst description = $input.first().json.description;\nconst parametersObject = {}\nfor(let i = 0; i<$input.first().json.parameters.length;i++ ) {\n  let parameter = $input.first().json.parameters[i];\n  if(parameter.includes(\":\"))\n  {\n    const [key, value] = parameter.split(\": \")\n    switch(value) {\n      case \"Tak\": parametersObject[key] = true; break;\n      case \"Nie\": parametersObject[key] = false; break;\n      default: parametersObject[key] = value\n\n    }\n  } else {\n    parametersObject[parameter] = true;\n  }\n}\n\n  return[\n    {json: {\n  id: id,\n  title: title,\n  price: price,\n  description: description,\n  ...parametersObject\n  }}\n]\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3056,
+        -32
+      ],
+      "id": "b5d3ed97-d621-4ca5-8074-68ee6b08e9ce",
+      "name": "getOfferDetailsJSON",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const all = $input.all();\nconst set = new Set();\n\nfor (const item of $input.all()) {\n\n  param = item.json\n  if (!param) continue;\n\n  for (const key of Object.keys(param)) {\n    set.add(key);\n  }\n}\n\nreturn {\n  all,\n  columns: [...set]\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        -352
+      ],
+      "id": "f0c9b3d7-39c1-4c15-b5be-fcc4d1e1d4ac",
+      "name": "getColumnNames"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn {spreadSheetId: $input.first().json.spreadsheetId}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        -320
+      ],
+      "id": "e806956d-ec83-4a1e-883a-2a61e4329ac3",
+      "name": "getSpreadsheetId"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Create spreadsheet').item.json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Prywatne",
+              "displayName": "Prywatne",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Zwierzęta",
+              "displayName": "Zwierzęta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Winda",
+              "displayName": "Winda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Umeblowane",
+              "displayName": "Umeblowane",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Rodzaj zabudowy",
+              "displayName": "Rodzaj zabudowy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Powierzchnia",
+              "displayName": "Powierzchnia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Liczba pokoi",
+              "displayName": "Liczba pokoi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Poziom",
+              "displayName": "Poziom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Parking",
+              "displayName": "Parking",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Czynsz (dodatkowo)",
+              "displayName": "Czynsz (dodatkowo)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3392,
+        -480
+      ],
+      "id": "fb9da6b0-7416-4eba-a652-65f7703dacf3",
+      "name": "Append headers",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+         
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Create spreadsheet').item.json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3632,
+        -480
+      ],
+      "id": "e802264f-70ca-4b5c-a7c2-fde5ef763054",
+      "name": "Delete double header",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+         
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.spreadSheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Prywatne",
+              "displayName": "Prywatne",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zwierzęta",
+              "displayName": "Zwierzęta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Winda",
+              "displayName": "Winda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Parking",
+              "displayName": "Parking",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Poziom",
+              "displayName": "Poziom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Umeblowane",
+              "displayName": "Umeblowane",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rodzaj zabudowy",
+              "displayName": "Rodzaj zabudowy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Powierzchnia",
+              "displayName": "Powierzchnia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Liczba pokoi",
+              "displayName": "Liczba pokoi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Czynsz (dodatkowo)",
+              "displayName": "Czynsz (dodatkowo)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spreadsheetId",
+              "displayName": "spreadsheetId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "properties",
+              "displayName": "properties",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sheets",
+              "displayName": "sheets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spreadsheetUrl",
+              "displayName": "spreadsheetUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spreadSheetId",
+              "displayName": "spreadSheetId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4160,
+        -208
+      ],
+      "id": "8a9a1caf-e46d-4fa9-8e4f-3d940c5696d0",
+      "name": "Append offer details",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+         
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.spreadSheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4448,
+        -208
+      ],
+      "id": "b26ac10a-2aff-469b-9ef5-e9426d35d925",
+      "name": "Delete additional rows",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+         
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1984,
+        -160
+      ],
+      "id": "f9faa168-f605-462a-917a-c0d4b0b2fc95",
+      "name": "Loop over offers"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        176,
+        -208
+      ],
+      "id": "979f9980-b3b9-4f29-8db3-e21f872568d1",
+      "name": "Loop over pages"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "getPagesCount",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create spreadsheet": {
+      "main": [
+        [
+          {
+            "node": "Add headers",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "getSpreadsheetId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add headers": {
+      "main": [
+        [
+          {
+            "node": "Append headers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Append offer details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getPagesCount": {
+      "main": [
+        [
+          {
+            "node": "getUrls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getUrls": {
+      "main": [
+        [
+          {
+            "node": "Loop over pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getPage": {
+      "main": [
+        [
+          {
+            "node": "getOfferLinks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getOfferLinks": {
+      "main": [
+        [
+          {
+            "node": "Wait01",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait02": {
+      "main": [
+        [
+          {
+            "node": "getOfferPage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait01": {
+      "main": [
+        [
+          {
+            "node": "Loop over pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ifExists": {
+      "main": [
+        [
+          {
+            "node": "Loop over offers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getOfferPage": {
+      "main": [
+        [
+          {
+            "node": "getOfferDetails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getOfferDetails": {
+      "main": [
+        [
+          {
+            "node": "getOfferDetailsJSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getOfferDetailsJSON": {
+      "main": [
+        [
+          {
+            "node": "Loop over offers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getColumnNames": {
+      "main": [
+        [
+          {
+            "node": "Create spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getSpreadsheetId": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append headers": {
+      "main": [
+        [
+          {
+            "node": "Delete double header",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete double header": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append offer details": {
+      "main": [
+        [
+          {
+            "node": "Delete additional rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete additional rows": {
+      "main": [
+        []
+      ]
+    },
+    "Loop over offers": {
+      "main": [
+        [
+          {
+            "node": "getColumnNames",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Wait02",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop over pages": {
+      "main": [
+        [
+          {
+            "node": "ifExists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "getPage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ea9bed19-41a0-4a56-8787-39b242b205f9",
+  "meta": {
+  },
+  "id": "OLlhVQAEbKVhPj2i",
+  "tags": []
+}

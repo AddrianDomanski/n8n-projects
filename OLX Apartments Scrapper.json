@@ -329,7 +329,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const all = $input.all();\nconst set = new Set();\n\nfor (const item of $input.all()) {\n\n  param = item.json\n  if (!param) continue;\n\n  for (const key of Object.keys(param)) {\n    set.add(key);\n  }\n}\n\nreturn {\n  all,\n  columns: [...set]\n};\n"
+        "jsCode": "const all = $input.all();\nconst set = new Set();\n\nfor (const item of $input.all()) {\n\n let param = item.json\n  if (!param) continue;\n\n  for (const key of Object.keys(param)) {\n    set.add(key);\n  }\n}\n\nreturn {\n  all,\n  columns: [...set]\n};\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

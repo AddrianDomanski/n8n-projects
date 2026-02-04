@@ -10,9 +10,9 @@ services:
       N8N_BASIC_AUTH_ACTIVE: "true"
     volumes:
       - n8n_data:/home/node/.n8n
-  #  command: ["start", "--tunnel"]
     depends_on:
       - ollama
+      - whisper
   
  
   ollama:
@@ -23,6 +23,18 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     deploy: {}
+    runtime: nvidia
+
+  whisper:
+    image: onerahmet/openai-whisper-asr-webservice:latest-gpu
+    #GPU onerahmet/openai-whisper-asr-webservice:latest-gpu
+    #CPU onerahmet/openai-whisper-asr-webservice:latest
+    container_name: whisper
+    ports:
+      - "9000:9000"
+    environment:
+      - ASR_ENGINE=faster_whisper
+      - ASR_MODEL=medium
     runtime: nvidia
 
 volumes:

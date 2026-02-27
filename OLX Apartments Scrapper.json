@@ -1,40 +1,6 @@
 {
-  "name": "OLX Apartments Scrapper",
+  "name": "OLX Searcher",
   "nodes": [
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -1104,
-        -208
-      ],
-      "id": "22ca2713-f772-4af2-8df7-57275c358b9d",
-      "name": "When clicking ‘Execute workflow’"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "fc20e288-87b9-4bf3-907a-6e8750145935",
-              "name": "baseUrl",
-              "value": "https://www.olx.pl/nieruchomosci/mieszkania/wynajem/q-mieszkanie-do-wynaj%C4%99cia/?search[filter_float_price:to]=3000&search[filter_float_m:from]=12&search[filter_float_m:to]=40",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -864,
-        -208
-      ],
-      "id": "9d5f74bf-2297-4dc9-93a5-647c2fe95065",
-      "name": "Edit Fields"
-    },
     {
       "parameters": {
         "url": "={{ $json.baseUrl }}",
@@ -56,7 +22,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -624,
+        944,
         -208
       ],
       "id": "2eef436c-3781-4841-954b-f3fc1c5b2fd9",
@@ -71,14 +37,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2416,
+        3872,
         -480
       ],
       "id": "163350fa-564d-4892-b998-dfa94e4bd6d7",
       "name": "Create spreadsheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          
+
         }
       }
     },
@@ -89,7 +55,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3104,
+        4560,
         -480
       ],
       "id": "41f7267d-d584-4323-9749-624517fc9f02",
@@ -100,7 +66,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3424,
+        4880,
         -192
       ],
       "id": "8df9bfa1-c726-4ad2-ac54-3c309191e24c",
@@ -114,7 +80,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3888,
+        5344,
         -208
       ],
       "id": "a1eb255f-33ab-4f59-a02e-754769f54734",
@@ -136,7 +102,7 @@
       "type": "n8n-nodes-base.html",
       "typeVersion": 1.2,
       "position": [
-        -352,
+        1216,
         -208
       ],
       "id": "5d6bf655-746c-45f5-8229-1117dc18016a",
@@ -144,12 +110,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const baseUrl = \"https://www.olx.pl/nieruchomosci/mieszkania/wynajem/q-mieszkanie-do-wynaj%C4%99cia/?search[filter_float_price:to]=3000&search[filter_float_m:from]=12&search[filter_float_m:to]=40\"\n\nconst paginationLength = parseInt($input.first().json.paginationList)\n\nconst urlList = []\n\nfor(let i = 2; i<= paginationLength; i++)\n  {\n const url = i === 1 ? baseUrl : `${baseUrl}&page=${i}`;\n  urlList.push({ url });\n}\n  \n\nreturn urlList"
+        "jsCode": "const baseUrl = $('Edit Fields').first().json.baseUrl\n\nconst paginationLength = parseInt($input.first().json.paginationList)\n\nconst urlList = []\n\nif(!isNaN(paginationLength)) {\nfor(let i = 1; i<= paginationLength; i++)\n  {\n const url = i === 1 ? baseUrl : `${baseUrl}&page=${i}`;\n  urlList.push({ url });\n}\n}\nelse urlList.push({baseUrl})\n\n\nreturn urlList"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -64,
+        1392,
         -208
       ],
       "id": "acd986a6-0838-4c76-b8c6-b2aa144a9e9d",
@@ -176,7 +142,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        672,
+        2128,
         -32
       ],
       "id": "74c7bde8-93cb-4e14-b59b-ffc5360de87c",
@@ -189,7 +155,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        896,
+        2352,
         -32
       ],
       "id": "9f01b64b-fa49-478d-9f8d-76c3d3309eea",
@@ -202,11 +168,12 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2256,
+        3712,
         -32
       ],
       "id": "a166d753-b6e9-4567-b97a-5d7b56c152b7",
       "name": "Wait02"
+      
     },
     {
       "parameters": {
@@ -215,11 +182,12 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        1120,
+        2576,
         -32
       ],
       "id": "3fbc6d28-2f9a-4a96-9e59-3629b40a8ac0",
       "name": "Wait01"
+      
     },
     {
       "parameters": {
@@ -249,7 +217,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1712,
+        3168,
         -208
       ],
       "id": "7a512c11-c408-4461-b9dd-267be61f4803",
@@ -263,7 +231,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        2480,
+        3936,
         -32
       ],
       "id": "975331d1-48fa-4cfe-a13a-950db3bc4a44",
@@ -306,7 +274,7 @@
       "type": "n8n-nodes-base.html",
       "typeVersion": 1.2,
       "position": [
-        2784,
+        4240,
         -32
       ],
       "id": "1d8e6dd4-3df0-4e28-a8dd-7401429f93f0",
@@ -320,7 +288,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3056,
+        4512,
         -32
       ],
       "id": "b5d3ed97-d621-4ca5-8074-68ee6b08e9ce",
@@ -329,12 +297,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const all = $input.all();\nconst set = new Set();\n\nfor (const item of $input.all()) {\n\n let param = item.json\n  if (!param) continue;\n\n  for (const key of Object.keys(param)) {\n    set.add(key);\n  }\n}\n\nreturn {\n  all,\n  columns: [...set]\n};\n"
+        "jsCode": "const all = $input.all();\nconst set = new Set();\n\nfor (const item of $input.all()) {\n\n  let param = item.json\n  if (!param) continue;\n\n  for (const key of Object.keys(param)) {\n    set.add(key);\n  }\n}\n\nreturn {\n  all,\n  columns: [...set]\n};\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2160,
+        3616,
         -352
       ],
       "id": "f0c9b3d7-39c1-4c15-b5be-fcc4d1e1d4ac",
@@ -347,7 +315,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2800,
+        4256,
         -320
       ],
       "id": "e806956d-ec83-4a1e-883a-2a61e4329ac3",
@@ -364,7 +332,8 @@
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
-          "mode": "list"
+          "mode": "list",
+          "cachedResultName": "Sheet1"
         },
         "columns": {
           "mappingMode": "autoMapInputData",
@@ -522,14 +491,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3392,
+        4848,
         -480
       ],
       "id": "fb9da6b0-7416-4eba-a652-65f7703dacf3",
       "name": "Append headers",
       "credentials": {
         "googleSheetsOAuth2Api": {
-         
+
         }
       }
     },
@@ -544,20 +513,21 @@
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
-          "mode": "list"
+          "mode": "list",
+          "cachedResultName": "Sheet1"
         }
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3632,
+        5088,
         -480
       ],
       "id": "e802264f-70ca-4b5c-a7c2-fde5ef763054",
       "name": "Delete double header",
       "credentials": {
         "googleSheetsOAuth2Api": {
-         
+
         }
       }
     },
@@ -572,7 +542,8 @@
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
-          "mode": "list"
+          "mode": "list",
+          "cachedResultName": "Sheet1"
         },
         "columns": {
           "mappingMode": "autoMapInputData",
@@ -762,14 +733,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4160,
+        5616,
         -208
       ],
       "id": "8a9a1caf-e46d-4fa9-8e4f-3d940c5696d0",
       "name": "Append offer details",
       "credentials": {
         "googleSheetsOAuth2Api": {
-         
+ 
         }
       }
     },
@@ -784,13 +755,14 @@
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
-          "mode": "list"
+          "mode": "list",
+          "cachedResultName": "Sheet1"
         }
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4448,
+        5904,
         -208
       ],
       "id": "b26ac10a-2aff-469b-9ef5-e9426d35d925",
@@ -798,7 +770,7 @@
       "executeOnce": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
-         
+
         }
       }
     },
@@ -811,7 +783,7 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        1984,
+        3440,
         -160
       ],
       "id": "f9faa168-f605-462a-917a-c0d4b0b2fc95",
@@ -824,37 +796,888 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        176,
+        1632,
         -208
       ],
       "id": "979f9980-b3b9-4f29-8db3-e21f872568d1",
       "name": "Loop over pages"
+    },
+    {
+      "parameters": {
+        "formTitle": "Scrapper mieszkań",
+        "formDescription": "asdsda",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Miasto"
+            },
+            {
+              "fieldLabel": "Podkategoria",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "wszystko"
+                  },
+                  {
+                    "option": "wynajem"
+                  },
+                  {
+                    "option": "sprzedaż"
+                  },
+                  {
+                    "option": "zamiana"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -928,
+        -176
+      ],
+      "id": "7b09df70-5df7-4723-bdfd-b291a44a7ef6",
+      "name": "On form submission"   
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Podkategoria }}",
+                    "rightValue": "wszystko",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "22945447-1816-49ad-a6a4-504021966b28"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ab137250-3a8f-4e21-92d0-1789333c1191",
+                    "leftValue": "={{ $json.Podkategoria }}",
+                    "rightValue": "wynajem",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "54d112c7-d47f-47ad-a3a9-26239f2a212e",
+                    "leftValue": "={{ $json.Podkategoria }}",
+                    "rightValue": "sprzedaż",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "771c5b62-f2cc-40f7-9a25-8384b373cd7c",
+                    "leftValue": "={{ $json.Podkategoria }}",
+                    "rightValue": "zamiana",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -672,
+        -208
+      ],
+      "id": "2bd90450-be1c-49cc-af5a-3f3dc47fa0db",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Rodzaj zabudowy",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "blok"
+                  },
+                  {
+                    "option": "kamienica"
+                  },
+                  {
+                    "option": "dom wolnostojący"
+                  },
+                  {
+                    "option": "szeregowiec"
+                  },
+                  {
+                    "option": "apartamentowiec"
+                  },
+                  {
+                    "option": "loft"
+                  },
+                  {
+                    "option": "pozostałe"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Cena - od",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Cena - do",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Powierzchnia - od",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Powierzchnia - do",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Poziom",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Suterena"
+                  },
+                  {
+                    "option": "Parter"
+                  },
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  },
+                  {
+                    "option": "6"
+                  },
+                  {
+                    "option": "7"
+                  },
+                  {
+                    "option": "8"
+                  },
+                  {
+                    "option": "9"
+                  },
+                  {
+                    "option": "10"
+                  },
+                  {
+                    "option": "Powyżej 10"
+                  },
+                  {
+                    "option": "Poddasze"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Umeblowanie",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Tak"
+                  },
+                  {
+                    "option": "Nie"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Liczba pokoi",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1 pokój"
+                  },
+                  {
+                    "option": "2 pokoje"
+                  },
+                  {
+                    "option": "3 pokoje"
+                  },
+                  {
+                    "option": "4 i więcej"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -256,
+        -544
+      ],
+      "id": "ed5f9820-c4ea-4a79-8b6b-0e9b66471a83",
+      "name": "Wszystko"
+     
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Parking",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "brak"
+                  },
+                  {
+                    "option": "przynależne na ulicy"
+                  },
+                  {
+                    "option": "parking strzeżony"
+                  },
+                  {
+                    "option": "w garażu"
+                  },
+                  {
+                    "option": "identyfikator do strefy płatnego parkowania"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Zwierzęta",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Tak"
+                  },
+                  {
+                    "option": "Nie"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Winda",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Tak"
+                  },
+                  {
+                    "option": "Nie"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Rodzaj zabudowy",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "blok"
+                  },
+                  {
+                    "option": "kamienica"
+                  },
+                  {
+                    "option": "dom wolnostojący"
+                  },
+                  {
+                    "option": "szeregowiec"
+                  },
+                  {
+                    "option": "apartamentowiec"
+                  },
+                  {
+                    "option": "loft"
+                  },
+                  {
+                    "option": "pozostałe"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Liczba pokoi",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1 pokój"
+                  },
+                  {
+                    "option": "2 pokoje"
+                  },
+                  {
+                    "option": "3 pokoje"
+                  },
+                  {
+                    "option": "4 i więcej"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Cena - od",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Cena - do",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Powierzchnia - od",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Powierzchnia - do",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Poziom",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Suterena"
+                  },
+                  {
+                    "option": "Parter"
+                  },
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  },
+                  {
+                    "option": "6"
+                  },
+                  {
+                    "option": "7"
+                  },
+                  {
+                    "option": "8"
+                  },
+                  {
+                    "option": "9"
+                  },
+                  {
+                    "option": "10"
+                  },
+                  {
+                    "option": "Powyżej 10"
+                  },
+                  {
+                    "option": "Poddasze"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Umeblowanie",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Tak"
+                  },
+                  {
+                    "option": "Nie"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -256,
+        -384
+      ],
+      "id": "ff2f0b90-9cb8-4ea1-be5e-5fa59ceb6651",
+      "name": "Wynajem"
+      
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Rynek",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Pierwotny"
+                  },
+                  {
+                    "option": "Wtórny"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Rodzaj zabudowy",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "wszystkie"
+                  },
+                  {
+                    "option": "blok"
+                  },
+                  {
+                    "option": "kamienica"
+                  },
+                  {
+                    "option": "dom wolnostojący"
+                  },
+                  {
+                    "option": "szeregowiec"
+                  },
+                  {
+                    "option": "apartamentowiec"
+                  },
+                  {
+                    "option": "loft"
+                  },
+                  {
+                    "option": "pozostałe"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Cena - od",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Cena - do",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Powierzchnia - od",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Powierzchnia - do",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Poziom",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Wszystkie"
+                  },
+                  {
+                    "option": "Suterena"
+                  },
+                  {
+                    "option": "Parter"
+                  },
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  },
+                  {
+                    "option": "6"
+                  },
+                  {
+                    "option": "7"
+                  },
+                  {
+                    "option": "8"
+                  },
+                  {
+                    "option": "9"
+                  },
+                  {
+                    "option": "10"
+                  },
+                  {
+                    "option": "Powyżej 10"
+                  },
+                  {
+                    "option": "Poddasze"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Umeblowanie",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Wszystkie"
+                  },
+                  {
+                    "option": "Tak"
+                  },
+                  {
+                    "option": "Nie"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Liczba pokoi",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Wszystkie"
+                  },
+                  {
+                    "option": "1 pokój"
+                  },
+                  {
+                    "option": "2 pokoje"
+                  },
+                  {
+                    "option": "3 pokoje"
+                  },
+                  {
+                    "option": "4 i więcej"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -256,
+        -224
+      ],
+      "id": "2547b8fe-f74c-4ce8-8bac-39136dde8df6",
+      "name": "Sprzedaż"
+      
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Rodzaj zabudowy",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "wszystkie"
+                  },
+                  {
+                    "option": "blok"
+                  },
+                  {
+                    "option": "kamienica"
+                  },
+                  {
+                    "option": "dom wolnostojący"
+                  },
+                  {
+                    "option": "szeregowiec"
+                  },
+                  {
+                    "option": "apartamentowiec"
+                  },
+                  {
+                    "option": "loft"
+                  },
+                  {
+                    "option": "pozostałe"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Liczba pokoi",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Wszystkie"
+                  },
+                  {
+                    "option": "1 pokój"
+                  },
+                  {
+                    "option": "2 pokoje"
+                  },
+                  {
+                    "option": "3 pokoje"
+                  },
+                  {
+                    "option": "4 i więcej"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Cena - od",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Cena - do",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Powierzchnia - od",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Powierzchnia - do",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Poziom",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Wszystkie"
+                  },
+                  {
+                    "option": "Suterena"
+                  },
+                  {
+                    "option": "Parter"
+                  },
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  },
+                  {
+                    "option": "6"
+                  },
+                  {
+                    "option": "7"
+                  },
+                  {
+                    "option": "8"
+                  },
+                  {
+                    "option": "9"
+                  },
+                  {
+                    "option": "10"
+                  },
+                  {
+                    "option": "Powyżej 10"
+                  },
+                  {
+                    "option": "Poddasze"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Umeblowanie",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Wszystkie"
+                  },
+                  {
+                    "option": "Tak"
+                  },
+                  {
+                    "option": "Nie"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -256,
+        -64
+      ],
+      "id": "27fe5646-8f11-42b0-bde9-8558c1b1258b",
+      "name": "Zamiana"
+     
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json\n\nconst Podkategoria = $('On form submission').first().json.Podkategoria\nconst Miasto = $('On form submission').first().json.Miasto\n\n  const {submittedAt, formMode, ...rest} = item\n  item.json = {Podkategoria, Miasto, ...rest}\n\n\nreturn item"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -208
+      ],
+      "id": "0caaa1a8-bb54-4533-8810-6b6411d403c4",
+      "name": "Item destruct"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item =$input.first().json\n\nconst keys = Object.keys(item)\nlet urlSettings = ''\n\nfor(const key of keys) {\n  const value = item[key]\n  switch(key) {\n  case \"Podkategoria\": urlSettings+=`${value}/`; break;\n  case \"Miasto\": urlSettings+=`${value}/?`\n  case \"Parking\": if(Array.isArray(value)) {\n      value.forEach((val, index) => {\n        urlSettings+=`search[filter_enum_parking][${index}]=${val}&`\n      })\n    }\n      break;\n  case \"Zwierzęta\": if(Array.isArray(value)) {\n      value.forEach((val, index) => {\n        urlSettings+= `search[filter_enum_pets][${index}]=${val}&`\n      })\n      break;\n    }\n  case \"Winda\": if(Array.isArray(value)) {\n      value.forEach((val, index) => {\n        urlSettings=`search[filter_enum_winda][${index}]=${val}&`\n      })\n      break;\n    }\n  case \"Rodzaj zabudowy\": if(Array.isArray(value)) {\n      value.forEach((val, index) => {\n        urlSettings+=`search[filter_enum_builttype][${index}]=${val}&`\n      }); break;\n    }\n  case \"Liczba pokoi\": if(Array.isArray(value)) {\n      value.forEach((val, index) => {\n        switch(val) {\n          case \"1 pokój\": urlSettings+=`search[filter_enum_rooms][${index}=one&`; break;\n          case \"2 pokoje\": urlSettings+=`search[filter_enum_rooms][${index}=two&`; break;\n          case \"3 pokoje\": urlSettings+=`search[filter_enum_rooms][${index}=three&`; break;\n          case \"4 pokoje\": urlSettings+=`search[filter_enum_rooms][${index}=four&`; break;\n        }\n      }); break;\n    }\n  case \"Cena - od\": if(value!=\"0\") urlSettings+=`search[filter_float_price:from]=${value}&`; break;\n  case \"Cena - do\": if(value!=\"0\") urlSettings+=`search[filter_float_price:to]=${value}&`; break;\n  case \"Powierzchnia - od\": if(value!=\"0\") urlSettings+=`search[filter_float_m:from]=${value}&`; break;\n  case \"Powierzchnia - do\": if(value!=\"0\") urlSettings+=`search[filter_float_m:to]=${value}&`; break;\n  case \"Poziom\": if(Array.isArray(value)) {\n      value.forEach((val, index) => {\n        switch(val) {\n          case \"Suterena\": urlSettings+=`search[filter_enum_floor_select][${index}]=floor_-1&`; break;\n          case \"Parter\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_0&`;break;\n          case \"1\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_1&`;break;\n          case \"2\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_2&`;break;\n          case \"3\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_3&`;break;\n          case \"4\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_4&`;break;\n          case \"5\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_5&`;break;\n          case \"6\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_6&`;break;\n          case \"7\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_7&`;break;\n          case \"8\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_8&`;break;\n          case \"9\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_9&`;break;\n          case \"10\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_10&`;break;\n          case \"Powyżej 10\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_11&`;break;\n          case \"Poddasze\": urlSettings=`search[filter_enum_floor_select][${index}]=floor_17&`;break;\n        }\n      })\n    }\n    case \"Umeblowanie\": if(Array.isArray(value)) {\n      value.forEach((val, index) => {\n        switch(val) {\n          case \"Tak\": urlSettings=`search[filter_enum_furniture][${index}]=yes`\n          case \"Nie\": urlSettings=`search[filter_enum_furniture][${index}]=no`\n        }\n      })\n    }\n  \n  }\n}\n\nreturn {urlSettings: urlSettings}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -208
+      ],
+      "id": "bdce7c70-8b7b-4c77-b99f-371029190608",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc20e288-87b9-4bf3-907a-6e8750145935",
+              "name": "baseUrl",
+              "value": "=https://www.olx.pl/nieruchomosci/mieszkania/{{ $json.urlSettings }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -208
+      ],
+      "id": "3adf3b2e-bcb9-4c40-ac04-089041cbc1c0",
+      "name": "Edit Fields"
     }
   ],
   "pinData": {},
   "connections": {
-    "When clicking ‘Execute workflow’": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "HTTP Request": {
       "main": [
         [
@@ -1125,14 +1948,135 @@
           }
         ]
       ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Wszystko",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wynajem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sprzedaż",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Zamiana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wszystko": {
+      "main": [
+        [
+          {
+            "node": "Item destruct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wynajem": {
+      "main": [
+        [
+          {
+            "node": "Item destruct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sprzedaż": {
+      "main": [
+        [
+          {
+            "node": "Item destruct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zamiana": {
+      "main": [
+        [
+          {
+            "node": "Item destruct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item destruct": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "ea9bed19-41a0-4a56-8787-39b242b205f9",
+  "versionId": "f7db51b4-c4f7-4797-a725-35dc7514af27",
   "meta": {
+   
   },
   "id": "OLlhVQAEbKVhPj2i",
   "tags": []
